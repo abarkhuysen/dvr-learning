@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'completed', 'dropped'])->default('active');
             $table->decimal('progress_percentage', 5, 2)->default(0);
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'course_id']);
             $table->index(['course_id', 'status', 'progress_percentage']);
         });

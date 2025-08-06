@@ -14,28 +14,28 @@ class Enrollment extends Model
         'status',
         'progress_percentage',
     ];
-    
+
     protected $casts = [
         'enrolled_at' => 'datetime',
         'progress_percentage' => 'decimal:2',
     ];
-    
+
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($enrollment) {
-            if (!$enrollment->enrolled_at) {
+            if (! $enrollment->enrolled_at) {
                 $enrollment->enrolled_at = now();
             }
         });
     }
-    
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-    
+
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);

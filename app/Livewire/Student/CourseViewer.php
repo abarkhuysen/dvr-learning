@@ -3,20 +3,26 @@
 namespace App\Livewire\Student;
 
 use App\Models\Course;
+use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\UserLessonProgress;
-use App\Models\Enrollment;
-use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class CourseViewer extends Component
 {
     public Course $course;
+
     public $currentLesson;
+
     public $lessons;
+
     public $userProgress;
+
     public $enrollment;
+
     public $showCompletionModal = false;
+
     public $courseCompleted = false;
 
     public function mount(Course $course)
@@ -25,7 +31,7 @@ class CourseViewer extends Component
         $this->enrollment = Enrollment::where('user_id', auth()->id())
             ->where('course_id', $course->id)
             ->firstOrFail();
-        
+
         $this->course = $course;
         $this->lessons = $course->lessons()->orderBy('order')->get();
         $this->loadProgress();
@@ -44,7 +50,8 @@ class CourseViewer extends Component
         // Find the first incomplete lesson or the first lesson if all are complete
         $incompleteLessons = $this->lessons->filter(function ($lesson) {
             $progress = $this->userProgress->where('lesson_id', $lesson->id)->first();
-            return !$progress || !$progress->completed;
+
+            return ! $progress || ! $progress->completed;
         });
 
         if ($incompleteLessons->isNotEmpty()) {
@@ -58,50 +65,54 @@ class CourseViewer extends Component
     public function selectLesson($lessonId)
     {
         $this->currentLesson = $this->lessons->find($lessonId);
-        
+
         // Track that the user has started watching this lesson
         $this->trackLessonStart();
     }
 
     public function trackLessonStart()
     {
-        if (!$this->currentLesson) return;
+        if (! $this->currentLesson) {
+            return;
+        }
 
         UserLessonProgress::firstOrCreate(
             [
                 'user_id' => auth()->id(),
-                'lesson_id' => $this->currentLesson->id
+                'lesson_id' => $this->currentLesson->id,
             ],
             [
                 'completed' => false,
-                'watch_time_seconds' => 0
+                'watch_time_seconds' => 0,
             ]
         );
     }
 
     public function markComplete()
     {
-        if (!$this->currentLesson) return;
+        if (! $this->currentLesson) {
+            return;
+        }
 
         $progress = UserLessonProgress::updateOrCreate(
             [
                 'user_id' => auth()->id(),
-                'lesson_id' => $this->currentLesson->id
+                'lesson_id' => $this->currentLesson->id,
             ],
             [
                 'completed' => true,
-                'completed_at' => now()
+                'completed_at' => now(),
             ]
         );
 
         $this->loadProgress();
         $this->updateCourseProgress();
-        
+
         // Check if this was the last lesson
         if ($this->checkCourseCompletion()) {
             $this->courseCompleted = true;
         }
-        
+
         $this->showCompletionModal = true;
     }
 
@@ -109,14 +120,14 @@ class CourseViewer extends Component
     {
         $totalLessons = $this->lessons->count();
         $completedLessons = $this->userProgress->where('completed', true)->count();
-        
-        $progressPercentage = $totalLessons > 0 
-            ? ($completedLessons / $totalLessons) * 100 
+
+        $progressPercentage = $totalLessons > 0
+            ? ($completedLessons / $totalLessons) * 100
             : 0;
 
         $this->enrollment->update([
             'progress_percentage' => $progressPercentage,
-            'status' => $progressPercentage >= 100 ? 'completed' : 'active'
+            'status' => $progressPercentage >= 100 ? 'completed' : 'active',
         ]);
     }
 
@@ -124,14 +135,14 @@ class CourseViewer extends Component
     {
         $totalLessons = $this->lessons->count();
         $completedLessons = $this->userProgress->where('completed', true)->count();
-        
+
         return $completedLessons >= $totalLessons;
     }
 
     public function nextLesson()
     {
-        $currentIndex = $this->lessons->search(fn($l) => $l->id === $this->currentLesson->id);
-        
+        $currentIndex = $this->lessons->search(fn ($l) => $l->id === $this->currentLesson->id);
+
         if ($currentIndex !== false && $currentIndex < $this->lessons->count() - 1) {
             $this->currentLesson = $this->lessons[$currentIndex + 1];
             $this->trackLessonStart();
@@ -140,8 +151,8 @@ class CourseViewer extends Component
 
     public function previousLesson()
     {
-        $currentIndex = $this->lessons->search(fn($l) => $l->id === $this->currentLesson->id);
-        
+        $currentIndex = $this->lessons->search(fn ($l) => $l->id === $this->currentLesson->id);
+
         if ($currentIndex !== false && $currentIndex > 0) {
             $this->currentLesson = $this->lessons[$currentIndex - 1];
             $this->trackLessonStart();
@@ -151,9 +162,72 @@ class CourseViewer extends Component
     public function continueToNext()
     {
         $this->showCompletionModal = false;
-        
-        if (!$this->courseCompleted) {
+
+        if (! $this->courseCompleted) {
             $this->nextLesson();
+        }
+    }
+
+    public function updateWatchTime($watchTimeSeconds)
+    {
+        if (! $this->currentLesson) {
+            return;
+        }
+
+        UserLessonProgress::updateOrCreate(
+            [
+                'user_id' => auth()->id(),
+                'lesson_id' => $this->currentLesson->id,
+            ],
+            [
+                'watch_time_seconds' => $watchTimeSeconds,
+                'last_watched_at' => now(),
+            ]
+        );
+
+        $this->loadProgress();
+    }
+
+    public function autoCompleteLesson($watchTimeSeconds, $videoDuration)
+    {
+        if (! $this->currentLesson || ! $videoDuration) {
+            return;
+        }
+
+        // Calculate watch percentage
+        $watchPercentage = ($watchTimeSeconds / $videoDuration) * 100;
+
+        // Auto-complete if 90% or more of video is watched
+        if ($watchPercentage >= 90) {
+            // Update watch time and mark as complete
+            UserLessonProgress::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'lesson_id' => $this->currentLesson->id,
+                ],
+                [
+                    'watch_time_seconds' => $watchTimeSeconds,
+                    'completed' => true,
+                    'completed_at' => now(),
+                    'watch_percentage' => round($watchPercentage, 1),
+                    'last_watched_at' => now(),
+                ]
+            );
+
+            $this->loadProgress();
+            $this->updateCourseProgress();
+
+            // Check if this was the last lesson
+            if ($this->checkCourseCompletion()) {
+                $this->courseCompleted = true;
+            }
+
+            // Show completion notification
+            session()->flash('lesson_auto_completed', 'Lesson automatically completed based on watch time!');
+            $this->showCompletionModal = true;
+        } else {
+            // Just update watch time without completion
+            $this->updateWatchTime($watchTimeSeconds);
         }
     }
 

@@ -17,17 +17,17 @@ class Lesson extends Model
         'is_free',
         'metadata',
     ];
-    
+
     protected $casts = [
         'is_free' => 'boolean',
         'metadata' => 'array',
     ];
-    
+
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
     }
-    
+
     public function userProgress(): HasMany
     {
         return $this->hasMany(UserLessonProgress::class);

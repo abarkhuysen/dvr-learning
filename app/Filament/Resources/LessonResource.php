@@ -3,23 +3,22 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LessonResource\Pages;
-use App\Filament\Resources\LessonResource\RelationManagers;
 use App\Models\Lesson;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Table;
 
 class LessonResource extends Resource
 {
     protected static ?string $model = Lesson::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-play-circle';
+
     protected static ?int $navigationSort = 3;
+
     protected static ?string $navigationGroup = 'Courses';
 
     public static function form(Form $form): Form
@@ -39,7 +38,7 @@ class LessonResource extends Resource
                         Forms\Components\Textarea::make('description')
                             ->rows(3),
                     ])->columns(1),
-                    
+
                 Forms\Components\Section::make('Video Settings')
                     ->schema([
                         Forms\Components\TextInput::make('vimeo_video_id')
@@ -79,7 +78,7 @@ class LessonResource extends Resource
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
-                    ->getStateUsing(fn ($record) => !empty($record->vimeo_video_id)),
+                    ->getStateUsing(fn ($record) => ! empty($record->vimeo_video_id)),
                 Tables\Columns\IconColumn::make('is_free')
                     ->label('Free')
                     ->boolean(),
@@ -119,7 +118,7 @@ class LessonResource extends Resource
                     ])
                     ->action(function (array $data, Lesson $record): void {
                         $videoPath = $data['video'];
-                        
+
                         // Dispatch job to upload video to Vimeo
                         dispatch(new \App\Jobs\ProcessVideoUpload(
                             $record,
@@ -127,7 +126,7 @@ class LessonResource extends Resource
                             $record->title,
                             $record->description
                         ));
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Video upload started')
                             ->body('The video is being uploaded to Vimeo. This may take a few minutes.')
@@ -140,7 +139,7 @@ class LessonResource extends Resource
                     ->color('success')
                     ->url(fn (Lesson $record) => "https://vimeo.com/{$record->vimeo_video_id}")
                     ->openUrlInNewTab()
-                    ->visible(fn (Lesson $record) => !empty($record->vimeo_video_id)),
+                    ->visible(fn (Lesson $record) => ! empty($record->vimeo_video_id)),
                 Tables\Actions\Action::make('remove_video')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
@@ -149,7 +148,7 @@ class LessonResource extends Resource
                         // Remove video from Vimeo
                         $vimeoService = app(\App\Services\VimeoService::class);
                         $vimeoService->deleteVideo($record->vimeo_video_id);
-                        
+
                         // Clear video ID from lesson
                         $record->update([
                             'vimeo_video_id' => null,
@@ -157,14 +156,14 @@ class LessonResource extends Resource
                                 'video_removed_at' => now()->toDateTimeString(),
                             ]),
                         ]);
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Video removed')
                             ->body('The video has been removed from Vimeo.')
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (Lesson $record) => !empty($record->vimeo_video_id)),
+                    ->visible(fn (Lesson $record) => ! empty($record->vimeo_video_id)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

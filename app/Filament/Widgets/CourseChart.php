@@ -9,27 +9,27 @@ use Illuminate\Support\Carbon;
 class CourseChart extends ChartWidget
 {
     protected static ?string $heading = 'Enrollment Trends';
-    
+
     protected static ?int $sort = 3;
-    
-    protected int | string | array $columnSpan = 'full';
-    
+
+    protected int|string|array $columnSpan = 'full';
+
     protected static ?string $maxHeight = '300px';
-    
+
     protected function getData(): array
     {
         $data = [];
         $labels = [];
-        
+
         // Get enrollment data for the last 30 days
         for ($i = 29; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
             $count = Enrollment::whereDate('enrolled_at', $date)->count();
-            
+
             $data[] = $count;
             $labels[] = $date->format('M j');
         }
-        
+
         return [
             'datasets' => [
                 [
@@ -49,7 +49,7 @@ class CourseChart extends ChartWidget
     {
         return 'line';
     }
-    
+
     protected function getOptions(): array
     {
         return [

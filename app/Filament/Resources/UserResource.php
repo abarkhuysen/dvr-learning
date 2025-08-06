@@ -3,24 +3,24 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationGroup = 'Students';
 
     public static function form(Form $form): Form
@@ -38,7 +38,7 @@ class UserResource extends Resource
                     ])
                     ->default('student'),
                 Forms\Components\Toggle::make('is_active')->default(true),
-                
+
                 Forms\Components\Section::make('Enrollments')
                     ->schema([
                         Forms\Components\Repeater::make('enrollments')
@@ -75,6 +75,24 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('enrollments_count')
                     ->counts('enrollments')
                     ->label('Courses'),
+                Tables\Columns\TextColumn::make('total_watch_time')
+                    ->label('Watch Time')
+                    ->getStateUsing(function ($record) {
+                        $totalSeconds = $record->lessonProgress()->sum('watch_time_seconds');
+                        $hours = floor($totalSeconds / 3600);
+                        $minutes = floor(($totalSeconds % 3600) / 60);
+
+                        return $hours.'h '.$minutes.'m';
+                    })
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query->withSum('lessonProgress', 'watch_time_seconds')
+                            ->orderBy('lesson_progress_sum_watch_time_seconds', $direction);
+                    }),
+                Tables\Columns\TextColumn::make('completed_lessons_count')
+                    ->label('Completed')
+                    ->getStateUsing(function ($record) {
+                        return $record->lessonProgress()->where('completed', true)->count();
+                    }),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])

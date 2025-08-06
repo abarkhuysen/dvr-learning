@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
             $table->integer('watch_time_seconds')->default(0);
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'lesson_id']);
             $table->index(['lesson_id', 'completed']);
         });

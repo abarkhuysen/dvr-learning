@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('average_completion_rate', 5, 2)->default(0);
             $table->timestamp('last_updated');
             $table->timestamps();
-            
+
             $table->unique('course_id');
         });
     }

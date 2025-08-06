@@ -20,10 +20,13 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->json('metadata')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index('created_by');
-            $table->fullText(['title', 'description'], 'course_search_idx');
+            // Only create fulltext index for MySQL
+            if (config('database.default') === 'mysql') {
+                $table->fullText(['title', 'description'], 'course_search_idx');
+            }
         });
     }
 

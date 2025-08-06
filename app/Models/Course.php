@@ -10,32 +10,32 @@ class Course extends Model
 {
     protected $fillable = [
         'code',
-        'title', 
+        'title',
         'description',
         'status',
         'created_by',
         'metadata',
     ];
-    
+
     protected $casts = [
         'metadata' => 'array',
     ];
-    
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    
+
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class);
     }
-    
+
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }
-    
+
     public function stats()
     {
         return $this->hasOne(CourseStats::class);

@@ -8,9 +8,9 @@ use Filament\Widgets\ChartWidget;
 class PopularCoursesChart extends ChartWidget
 {
     protected static ?string $heading = 'Popular Courses';
-    
+
     protected static ?int $sort = 4;
-    
+
     protected function getData(): array
     {
         $courses = Course::withCount('enrollments')
@@ -18,7 +18,7 @@ class PopularCoursesChart extends ChartWidget
             ->orderByDesc('enrollments_count')
             ->limit(5)
             ->get();
-        
+
         return [
             'datasets' => [
                 [
@@ -33,8 +33,7 @@ class PopularCoursesChart extends ChartWidget
                     ],
                 ],
             ],
-            'labels' => $courses->pluck('title')->map(fn($title) => 
-                \Illuminate\Support\Str::limit($title, 20)
+            'labels' => $courses->pluck('title')->map(fn ($title) => \Illuminate\Support\Str::limit($title, 20)
             )->toArray(),
         ];
     }
@@ -43,7 +42,7 @@ class PopularCoursesChart extends ChartWidget
     {
         return 'doughnut';
     }
-    
+
     protected function getOptions(): array
     {
         return [

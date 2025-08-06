@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Models\Lesson;
 use App\Services\VimeoService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -18,9 +17,11 @@ class ProcessVideoUpload implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $maxExceptions = 1;
+
     public $timeout = 1800; // 30 minutes
-    
+
     /**
      * Create a new job instance.
      */
@@ -43,7 +44,7 @@ class ProcessVideoUpload implements ShouldQueue
                 'lesson_id' => $this->lesson->id,
                 'video_path' => $this->videoPath,
             ]);
-            
+
             // Prepare metadata
             $metadata = [
                 'name' => $this->title ?? $this->lesson->title,
@@ -57,25 +58,25 @@ class ProcessVideoUpload implements ShouldQueue
                     'domains' => [config('app.url')],
                 ],
             ];
-            
+
             // Upload video to Vimeo
             $result = $vimeoService->uploadVideo($this->videoPath, $metadata);
-            
+
             if ($result['success']) {
                 // Update lesson with Vimeo video ID
                 $this->lesson->update([
                     'vimeo_video_id' => $result['video_id'],
                 ]);
-                
+
                 Log::info('Video uploaded successfully', [
                     'lesson_id' => $this->lesson->id,
                     'vimeo_video_id' => $result['video_id'],
                 ]);
-                
+
                 // Dispatch job to check upload status
                 dispatch(new CheckVideoStatus($this->lesson))
                     ->delay(now()->addMinutes(2));
-                
+
                 // Clean up temporary file if it exists
                 if (Storage::exists($this->videoPath)) {
                     Storage::delete($this->videoPath);
@@ -85,8 +86,8 @@ class ProcessVideoUpload implements ShouldQueue
                     'lesson_id' => $this->lesson->id,
                     'error' => $result['error'] ?? 'Unknown error',
                 ]);
-                
-                throw new \Exception('Failed to upload video: ' . ($result['error'] ?? 'Unknown error'));
+
+                throw new \Exception('Failed to upload video: '.($result['error'] ?? 'Unknown error'));
             }
         } catch (\Exception $e) {
             Log::error('Video upload job failed', [
@@ -94,16 +95,16 @@ class ProcessVideoUpload implements ShouldQueue
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Clean up temporary file on failure
             if (Storage::exists($this->videoPath)) {
                 Storage::delete($this->videoPath);
             }
-            
+
             throw $e;
         }
     }
-    
+
     /**
      * Handle a job failure.
      */
@@ -113,12 +114,12 @@ class ProcessVideoUpload implements ShouldQueue
             'lesson_id' => $this->lesson->id,
             'error' => $exception->getMessage(),
         ]);
-        
+
         // Clean up temporary file
         if (Storage::exists($this->videoPath)) {
             Storage::delete($this->videoPath);
         }
-        
+
         // Optionally notify admin or update lesson status
     }
 }

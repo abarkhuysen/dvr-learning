@@ -3,23 +3,23 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EnrollmentResource\Pages;
-use App\Filament\Resources\EnrollmentResource\RelationManagers;
 use App\Models\Enrollment;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EnrollmentResource extends Resource
 {
     protected static ?string $model = Enrollment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
     protected static ?int $navigationSort = 4;
+
     protected static ?string $navigationGroup = 'Students';
 
     public static function form(Form $form): Form
@@ -29,8 +29,7 @@ class EnrollmentResource extends Resource
                 Forms\Components\Section::make('Enrollment Details')
                     ->schema([
                         Forms\Components\Select::make('user_id')
-                            ->relationship('user', 'name', fn (Builder $query) => 
-                                $query->where('role', 'student'))
+                            ->relationship('user', 'name', fn (Builder $query) => $query->where('role', 'student'))
                             ->label('Student')
                             ->required()
                             ->searchable()
@@ -89,7 +88,7 @@ class EnrollmentResource extends Resource
                     ->label('Progress')
                     ->formatStateUsing(fn ($state) => "{$state}%")
                     ->sortable()
-                    ->color(fn ($state) => match(true) {
+                    ->color(fn ($state) => match (true) {
                         $state >= 80 => 'success',
                         $state >= 50 => 'warning',
                         default => 'gray',

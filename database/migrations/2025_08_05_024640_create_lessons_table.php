@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->boolean('is_free')->default(false);
             $table->timestamps();
-            
+
             $table->index(['course_id', 'order']);
         });
     }

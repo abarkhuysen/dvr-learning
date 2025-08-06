@@ -64,7 +64,7 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
-    
+
     /**
      * Role helper methods
      */
@@ -72,12 +72,12 @@ class User extends Authenticatable
     {
         return $this->role === 'student';
     }
-    
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
-    
+
     /**
      * Role switching methods for admins
      */
@@ -85,28 +85,30 @@ class User extends Authenticatable
     {
         return $this->role === 'admin' && session('acting_as') === 'student';
     }
-    
+
     public function canSwitchRoles(): bool
     {
         return $this->role === 'admin';
     }
-    
+
     public function getCurrentRole(): string
     {
         if ($this->isActingAsStudent()) {
             return 'student';
         }
+
         return $this->role;
     }
-    
+
     public function getCurrentRoleDisplay(): string
     {
         if ($this->isActingAsStudent()) {
             return 'Student View (Admin)';
         }
+
         return ucfirst($this->role);
     }
-    
+
     /**
      * Relationships
      */
@@ -114,9 +116,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Enrollment::class);
     }
-    
+
     public function managedCourses()
     {
         return $this->hasMany(Course::class, 'created_by');
+    }
+
+    public function lessonProgress()
+    {
+        return $this->hasMany(UserLessonProgress::class);
     }
 }

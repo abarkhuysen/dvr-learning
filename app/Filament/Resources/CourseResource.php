@@ -3,16 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CourseResource\Pages;
-use App\Filament\Resources\CourseResource\RelationManagers;
 use App\Models\Course;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
 class CourseResource extends Resource
@@ -20,7 +17,9 @@ class CourseResource extends Resource
     protected static ?string $model = Course::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationGroup = 'Courses';
 
     public static function form(Form $form): Form
@@ -32,29 +31,28 @@ class CourseResource extends Resource
                         Forms\Components\TextInput::make('title')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn ($state, $set) => 
-                                $set('code', Str::upper(Str::slug($state, '')))),
-                        
+                            ->afterStateUpdated(fn ($state, $set) => $set('code', Str::upper(Str::slug($state, '')))),
+
                         Forms\Components\TextInput::make('code')
                             ->required()
                             ->unique(ignoreRecord: true),
-                        
+
                         Forms\Components\Textarea::make('description')
                             ->required()
                             ->rows(3),
-                        
+
                         Forms\Components\Select::make('status')
                             ->options([
                                 'draft' => 'Draft',
-                                'published' => 'Published', 
+                                'published' => 'Published',
                                 'archived' => 'Archived',
                             ])
                             ->default('draft'),
-                            
+
                         Forms\Components\Hidden::make('created_by')
                             ->default(auth()->id()),
                     ]),
-                
+
                 Forms\Components\Section::make('Lessons')
                     ->schema([
                         Forms\Components\Repeater::make('lessons')
@@ -71,8 +69,7 @@ class CourseResource extends Resource
                                 Forms\Components\Toggle::make('is_free'),
                             ])
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => 
-                                $state['title'] ?? null)
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
                             ->addActionLabel('Add Lesson')
                             ->reorderableWithButtons(),
                     ]),
@@ -102,6 +99,33 @@ class CourseResource extends Resource
                 Tables\Columns\TextColumn::make('enrollments_count')
                     ->counts('enrollments')
                     ->label('Students'),
+                Tables\Columns\TextColumn::make('completion_rate')
+                    ->label('Completion %')
+                    ->getStateUsing(function ($record) {
+                        $totalEnrollments = $record->enrollments()->count();
+                        if ($totalEnrollments === 0) {
+                            return '0%';
+                        }
+
+                        $completedEnrollments = $record->enrollments()
+                            ->where('status', 'completed')->count();
+
+                        $percentage = round(($completedEnrollments / $totalEnrollments) * 100, 1);
+
+                        return $percentage.'%';
+                    }),
+                Tables\Columns\TextColumn::make('avg_watch_time')
+                    ->label('Avg. Watch Time')
+                    ->getStateUsing(function ($record) {
+                        $lessonIds = $record->lessons()->pluck('id');
+                        $totalSeconds = \App\Models\UserLessonProgress::whereIn('lesson_id', $lessonIds)
+                            ->avg('watch_time_seconds') ?? 0;
+
+                        $hours = floor($totalSeconds / 3600);
+                        $minutes = floor(($totalSeconds % 3600) / 60);
+
+                        return $hours.'h '.$minutes.'m';
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),

@@ -84,11 +84,13 @@
                     <div class="bg-black rounded-lg overflow-hidden mb-6" style="aspect-ratio: 16/9;">
                         @if($currentLesson->vimeo_video_id)
                             <iframe 
-                                src="https://player.vimeo.com/video/{{ $currentLesson->vimeo_video_id }}?badge=0&autopause=0&player_id=0"
+                                id="vimeo-player-{{ $currentLesson->id }}"
+                                src="https://player.vimeo.com/video/{{ $currentLesson->vimeo_video_id }}?badge=0&autopause=0&player_id=vimeo-player-{{ $currentLesson->id }}"
                                 class="w-full h-full"
                                 frameborder="0"
                                 allow="autoplay; fullscreen; picture-in-picture"
-                                title="{{ $currentLesson->title }}">
+                                title="{{ $currentLesson->title }}"
+                                data-lesson-id="{{ $currentLesson->id }}">
                             </iframe>
                         @else
                             <div class="flex items-center justify-center h-full">
@@ -99,6 +101,23 @@
                             </div>
                         @endif
                     </div>
+
+                    <!-- Real-time Progress Indicator -->
+                    @if($currentLesson->vimeo_video_id)
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-6" id="video-progress-indicator">
+                        <div class="flex items-center justify-between mb-2">
+                            <flux:text size="sm" class="font-medium">Video Progress</flux:text>
+                            <span id="watch-time-display" class="text-sm text-gray-600">0:00 / 0:00</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="video-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <flux:text size="xs" class="text-gray-500">Watch 90% to auto-complete</flux:text>
+                            <span id="watch-percentage-display" class="text-xs text-gray-500">0%</span>
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Lesson Info and Actions -->
                     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -184,6 +203,95 @@
             @endif
         </main>
     </div>
+
+    <!-- Vimeo Player API and Video Tracking Script -->
+    @if($currentLesson && $currentLesson->vimeo_video_id)
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframe = document.querySelector('#vimeo-player-{{ $currentLesson->id }}');
+            
+            if (!iframe) return;
+            
+            const player = new Vimeo.Player(iframe);
+            const lessonId = {{ $currentLesson->id }};
+            let videoDuration = 0;
+            let lastWatchTime = 0;
+            let hasAutoCompleted = false;
+            let watchTimeUpdateInterval;
+            
+            // Get video duration
+            player.getDuration().then(function(duration) {
+                videoDuration = duration;
+                document.getElementById('watch-time-display').textContent = '0:00 / ' + formatTime(duration);
+            });
+            
+            // Update progress display
+            function updateProgressDisplay(currentTime) {
+                const percentage = videoDuration > 0 ? (currentTime / videoDuration) * 100 : 0;
+                const progressBar = document.getElementById('video-progress-bar');
+                const percentageDisplay = document.getElementById('watch-percentage-display');
+                const timeDisplay = document.getElementById('watch-time-display');
+                
+                if (progressBar) progressBar.style.width = percentage + '%';
+                if (percentageDisplay) percentageDisplay.textContent = Math.round(percentage) + '%';
+                if (timeDisplay) timeDisplay.textContent = formatTime(currentTime) + ' / ' + formatTime(videoDuration);
+            }
+            
+            // Format time in MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return minutes + ':' + (secs < 10 ? '0' : '') + secs;
+            }
+            
+            // Track time updates
+            player.on('timeupdate', function(data) {
+                const currentTime = data.seconds;
+                lastWatchTime = Math.max(lastWatchTime, currentTime); // Only increase, never decrease
+                updateProgressDisplay(currentTime);
+                
+                // Check for auto-completion (90% threshold)
+                if (!hasAutoCompleted && videoDuration > 0) {
+                    const watchPercentage = (lastWatchTime / videoDuration) * 100;
+                    if (watchPercentage >= 90) {
+                        hasAutoCompleted = true;
+                        @this.autoCompleteLesson(lastWatchTime, videoDuration);
+                    }
+                }
+            });
+            
+            // Update watch time every 10 seconds
+            watchTimeUpdateInterval = setInterval(function() {
+                if (lastWatchTime > 0) {
+                    @this.updateWatchTime(lastWatchTime);
+                }
+            }, 10000);
+            
+            // Handle play event
+            player.on('play', function() {
+                // Track lesson start when video starts playing
+                @this.trackLessonStart();
+            });
+            
+            // Final update when video ends or user navigates away
+            player.on('ended', function() {
+                clearInterval(watchTimeUpdateInterval);
+                if (lastWatchTime > 0) {
+                    @this.updateWatchTime(lastWatchTime);
+                }
+            });
+            
+            // Clean up on navigation
+            window.addEventListener('beforeunload', function() {
+                clearInterval(watchTimeUpdateInterval);
+                if (lastWatchTime > 0) {
+                    @this.updateWatchTime(lastWatchTime);
+                }
+            });
+        });
+    </script>
+    @endif
 
     <!-- Lesson Completion Modal -->
     <flux:modal name="lesson-completion" :show="$showCompletionModal" wire:model="showCompletionModal">
