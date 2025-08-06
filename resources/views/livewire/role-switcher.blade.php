@@ -1,6 +1,15 @@
 <div>
     @if(auth()->check() && auth()->user()->canSwitchRoles())
         @if(auth()->user()->isActingAsStudent())
+
+            <flux:menu.separator />
+
+            <flux:menu.item as="button" wire:click="exitStudentView" icon="x-mark" class="w-full">
+                {{ __('Exit Student View') }}
+            </flux:menu.item>
+
+
+
             <!-- Banner shown when admin is in student view -->
             <div class="bg-amber-50 border-b border-amber-200">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

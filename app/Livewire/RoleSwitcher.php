@@ -32,7 +32,7 @@ class RoleSwitcher extends Component
     {
         session()->forget('acting_as');
 
-        return $this->redirect('/admin', navigate: true);
+        return $this->redirect('/admin', navigate: false);
     }
 
     public function render()

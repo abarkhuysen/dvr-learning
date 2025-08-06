@@ -6,9 +6,6 @@
         @include('partials.head')
     </head>
     <body class="bg-gray-50 text-gray-900">
-        <!-- Role Switcher Banner -->
-{{--        @livewire('role-switcher')--}}
-
         <!-- Navigation -->
         <flux:header container class="border-b border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
@@ -58,6 +55,9 @@
                             </div>
                         </div>
                     </flux:menu.radio.group>
+
+                    <!-- Role Switcher Banner -->
+                    @livewire('role-switcher')
 
                     <flux:menu.separator />
 
