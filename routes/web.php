@@ -18,7 +18,7 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     
     // Course routes
     Volt::route('courses', 'student.courses')->name('courses');
-    Volt::route('course/{course}', 'student.course-viewer')->name('course.view');
+    Route::get('course/{course}', App\Livewire\Student\CourseViewer::class)->name('course.view');
     
     // Profile route
     Volt::route('profile', 'student.profile')->name('profile');

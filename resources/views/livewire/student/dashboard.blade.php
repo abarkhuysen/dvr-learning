@@ -74,7 +74,13 @@ new class extends Component
 
     public function viewCourse($courseId)
     {
-        return redirect()->route('course.view', $courseId);
+        return $this->redirect(route('course.view', $courseId), navigate: true);
+    }
+
+    public function continueLearning($courseId)
+    {
+        // Redirect to course viewer which will automatically select the next incomplete lesson
+        return $this->redirect(route('course.view', $courseId), navigate: true);
     }
 
     public function enrollInCourse($courseId)
@@ -179,10 +185,16 @@ new class extends Component
                                 </div>
                             </div>
 
-                            <flux:button wire:click="viewCourse({{ $enrollment->course->id }})"
+                            <flux:button wire:click="continueLearning({{ $enrollment->course->id }})"
                                        variant="primary"
                                        class="w-full">
-                                Continue Learning
+                                @if($enrollment->progress_percentage == 0)
+                                    Start Course
+                                @elseif($enrollment->progress_percentage == 100)
+                                    Review Course
+                                @else
+                                    Continue Learning
+                                @endif
                             </flux:button>
                         </div>
                     </div>
@@ -203,7 +215,7 @@ new class extends Component
                         <div class="flex-1">
                             <flux:text class="font-medium">{{ $progress->lesson->title }}</flux:text>
                             <flux:text size="sm" class="text-gray-600">
-                                {{ $progress->lesson->course->title }} • {{ $progress->completed_at->diffForHumans() }}
+                                {{ $progress->lesson->course->title }} • {{ $progress->completed_at ? $progress->completed_at->diffForHumans() : ''  }}
                             </flux:text>
                         </div>
                     </div>
