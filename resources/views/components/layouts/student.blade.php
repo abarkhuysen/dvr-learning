@@ -1,92 +1,79 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
-        <title>{{ config('app.name') }}</title>
+        <title>{{ $title ?? '' }} {{ config('app.name') }}</title>
         @fluxAppearance
         @include('partials.head')
     </head>
     <body class="bg-gray-50 text-gray-900">
         <!-- Role Switcher Banner -->
-        @livewire('role-switcher')
+{{--        @livewire('role-switcher')--}}
 
         <!-- Navigation -->
-        <header class="bg-white border-b {{ auth()->check() && auth()->user()->isActingAsStudent() ? '' : 'border-t-4 border-t-blue-500' }}">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <!-- Logo and Navigation -->
-                    <div class="flex items-center space-x-8">
-                        <a href="/dashboard" wire:navigate class="flex items-center space-x-2">
-                            <flux:icon name="academic-cap" class="size-8 text-blue-600" />
-                            <span class="text-xl font-semibold">{{ config('app.name') }}</span>
-                        </a>
+        <flux:header container class="border-b border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
-                        <nav class="hidden md:flex space-x-6">
-                            <a href="/dashboard" wire:navigate class="text-gray-700 hover:text-blue-600 font-medium">
-                                Dashboard
-                            </a>
-                        </nav>
-                    </div>
+            <a href="{{ route('dashboard') }}" class="ms-2 me-5 flex items-center space-x-2 rtl:space-x-reverse lg:ms-0" wire:navigate>
+                <flux:icon name="academic-cap" class="size-6 text-blue-900" />
+                <x-app-logo />
+            </a>
 
-                    <!-- User Menu -->
-                    <div class="flex items-center space-x-4">
-                        @if(auth()->check() && auth()->user()->isAdmin() && !auth()->user()->isActingAsStudent())
-                            <flux:button href="/admin" variant="ghost" icon="arrow-left">
-                                Back to Admin
-                            </flux:button>
-                        @endif
+            <flux:navbar class="-mb-px max-lg:hidden">
+                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </flux:navbar.item>
+            </flux:navbar>
 
-                        @if(auth()->check())
-                            <flux:dropdown>
-                                <flux:button variant="ghost" icon:trailing="chevron-down" class="flex items-center space-x-2">
-                                    @if(auth()->user()->avatar)
-                                        <img src="{{ auth()->user()->avatar }}" class="size-8 rounded-full" alt="Avatar">
-                                    @else
-                                        <div class="size-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
-                                            {{ auth()->user()->initials() }}
-                                        </div>
-                                    @endif
-                                    <span class="hidden md:block">{{ auth()->user()->name }}</span>
-                                </flux:button>
-                                <flux:menu>
-                                    <flux:menu.item icon="user-circle" href="/profile" wire:navigate>
-                                        Profile
-                                    </flux:menu.item>
-                                    <flux:menu.item icon="cog" href="/settings/profile" wire:navigate>
-                                        Settings
-                                    </flux:menu.item>
+            <flux:spacer />
 
-                                    @if(auth()->user()->canSwitchRoles() && !auth()->user()->isActingAsStudent())
-                                        <flux:menu.separator />
-                                        <flux:menu.item icon="arrows-right-left" wire:click="$dispatch('switch-to-student')">
-                                            View as Student
-                                        </flux:menu.item>
-                                    @endif
+            <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
+                <flux:tooltip :content="__('Search')" position="bottom">
+                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
+                </flux:tooltip>
+            </flux:navbar>
 
-                                    <flux:menu.separator />
-                                    <flux:menu.item icon="arrow-left-start-on-rectangle">
-                                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                                            @csrf
-                                            <button type="submit" class="w-full text-left">
-                                                Sign out
-                                            </button>
-                                        </form>
-                                    </flux:menu.item>
-                                </flux:menu>
-                            </flux:dropdown>
-                        @else
-                            <flux:button href="/login" wire:navigate variant="primary">
-                                Sign In
-                            </flux:button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </header>
+            <!-- Desktop User Menu -->
+            <flux:dropdown position="top" align="end">
+                <flux:profile
+                    class="cursor-pointer"
+                    :initials="auth()->user()->initials()"
+                />
 
-        <!-- Main Content -->
-        <main class="min-h-[calc(100vh-4rem)]">
+                <flux:menu>
+                    <flux:menu.radio.group>
+                        <div class="p-0 text-sm font-normal">
+                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
+                                    <span
+                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
+                                    >
+                                        {{ auth()->user()->initials() }}
+                                    </span>
+                                </span>
+
+                                <div class="grid flex-1 text-start text-sm leading-tight">
+                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
+                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </flux:menu.radio.group>
+
+                    <flux:menu.separator />
+
+                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                        @csrf
+                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
+                            {{ __('Log Out') }}
+                        </flux:menu.item>
+                    </form>
+                </flux:menu>
+            </flux:dropdown>
+        </flux:header>
+
+        <flux:main>
             {{ $slot }}
-        </main>
+        </flux:main>
 
         @fluxScripts
     </body>

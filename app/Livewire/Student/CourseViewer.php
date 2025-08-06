@@ -168,10 +168,32 @@ class CourseViewer extends Component
         }
     }
 
-    public function updateWatchTime($watchTimeSeconds)
+    public function updateWatchTime($watchTimeSeconds, $videoDuration = null)
     {
         if (! $this->currentLesson) {
             return;
+        }
+
+        // Calculate watch percentage if video duration is available
+        $watchPercentage = 0;
+        if ($videoDuration && $videoDuration > 0) {
+            $watchPercentage = min(($watchTimeSeconds / $videoDuration) * 100, 100);
+        } else {
+            // Try to get duration from lesson metadata if not provided
+            $metadata = $this->currentLesson->metadata ?? [];
+            if (isset($metadata['duration']) && $metadata['duration'] > 0) {
+                $watchPercentage = min(($watchTimeSeconds / $metadata['duration']) * 100, 100);
+            }
+        }
+
+        $updateData = [
+            'watch_time_seconds' => $watchTimeSeconds,
+            'last_watched_at' => now(),
+        ];
+
+        // Only update watch_percentage if we can calculate it
+        if ($watchPercentage > 0) {
+            $updateData['watch_percentage'] = round($watchPercentage, 2);
         }
 
         UserLessonProgress::updateOrCreate(
@@ -179,10 +201,7 @@ class CourseViewer extends Component
                 'user_id' => auth()->id(),
                 'lesson_id' => $this->currentLesson->id,
             ],
-            [
-                'watch_time_seconds' => $watchTimeSeconds,
-                'last_watched_at' => now(),
-            ]
+            $updateData
         );
 
         $this->loadProgress();
@@ -199,18 +218,18 @@ class CourseViewer extends Component
 
         // Auto-complete if 90% or more of video is watched
         if ($watchPercentage >= 90) {
-            // Update watch time and mark as complete
+            // First update watch time and percentage (this handles the progress tracking)
+            $this->updateWatchTime($watchTimeSeconds, $videoDuration);
+            
+            // Then mark as complete
             UserLessonProgress::updateOrCreate(
                 [
                     'user_id' => auth()->id(),
                     'lesson_id' => $this->currentLesson->id,
                 ],
                 [
-                    'watch_time_seconds' => $watchTimeSeconds,
                     'completed' => true,
                     'completed_at' => now(),
-                    'watch_percentage' => round($watchPercentage, 1),
-                    'last_watched_at' => now(),
                 ]
             );
 
@@ -226,8 +245,8 @@ class CourseViewer extends Component
             session()->flash('lesson_auto_completed', 'Lesson automatically completed based on watch time!');
             $this->showCompletionModal = true;
         } else {
-            // Just update watch time without completion
-            $this->updateWatchTime($watchTimeSeconds);
+            // Just update watch time with duration for percentage calculation
+            $this->updateWatchTime($watchTimeSeconds, $videoDuration);
         }
     }
 

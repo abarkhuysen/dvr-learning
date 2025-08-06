@@ -263,8 +263,8 @@
             
             // Update watch time every 10 seconds
             watchTimeUpdateInterval = setInterval(function() {
-                if (lastWatchTime > 0) {
-                    @this.updateWatchTime(lastWatchTime);
+                if (lastWatchTime > 0 && videoDuration > 0) {
+                    @this.updateWatchTime(lastWatchTime, videoDuration);
                 }
             }, 10000);
             
@@ -277,16 +277,16 @@
             // Final update when video ends or user navigates away
             player.on('ended', function() {
                 clearInterval(watchTimeUpdateInterval);
-                if (lastWatchTime > 0) {
-                    @this.updateWatchTime(lastWatchTime);
+                if (lastWatchTime > 0 && videoDuration > 0) {
+                    @this.updateWatchTime(lastWatchTime, videoDuration);
                 }
             });
             
             // Clean up on navigation
             window.addEventListener('beforeunload', function() {
                 clearInterval(watchTimeUpdateInterval);
-                if (lastWatchTime > 0) {
-                    @this.updateWatchTime(lastWatchTime);
+                if (lastWatchTime > 0 && videoDuration > 0) {
+                    @this.updateWatchTime(lastWatchTime, videoDuration);
                 }
             });
         });
