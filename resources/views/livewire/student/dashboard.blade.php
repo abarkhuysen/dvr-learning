@@ -191,52 +191,6 @@ new class extends Component
         </flux:card>
         @endif
 
-        <!-- Available Courses Section -->
-        @if($availableCourses->count() > 0)
-        <flux:card class="p-6 mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <flux:heading size="lg">Discover New Courses</flux:heading>
-                <flux:button href="/courses" wire:navigate variant="outline">
-                    View All Courses
-                </flux:button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($availableCourses as $course)
-                    <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                        <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 relative">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <flux:icon name="plus-circle" class="size-16 text-white opacity-80" />
-                            </div>
-                        </div>
-
-                        <div class="p-4">
-                            <flux:heading size="md" class="mb-2">{{ $course->title }}</flux:heading>
-                            <flux:text size="sm" class="text-gray-600 mb-4">
-                                {{ Str::limit($course->description, 100) }}
-                            </flux:text>
-
-                            <div class="flex justify-between items-center mb-4">
-                                <flux:text size="sm" class="text-gray-500">
-                                    {{ $course->lessons->count() }} lessons
-                                </flux:text>
-                                <flux:text size="sm" class="text-gray-500">
-                                    Free
-                                </flux:text>
-                            </div>
-
-                            <flux:button wire:click="enrollInCourse({{ $course->id }})"
-                                       variant="primary"
-                                       class="w-full">
-                                Enroll Now
-                            </flux:button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </flux:card>
-        @endif
-
         <!-- Recent Activity -->
         @if($recentProgress->count() > 0)
         <flux:card class="p-6">
