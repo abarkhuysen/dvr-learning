@@ -22,6 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'phone',
+        'bio',
+        'avatar',
+        'is_active',
     ];
 
     /**
@@ -44,6 +49,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -57,5 +63,31 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+    
+    /**
+     * Role helper methods
+     */
+    public function isStudent(): bool
+    {
+        return $this->role === 'student';
+    }
+    
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+    
+    /**
+     * Relationships
+     */
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+    
+    public function managedCourses()
+    {
+        return $this->hasMany(Course::class, 'created_by');
     }
 }

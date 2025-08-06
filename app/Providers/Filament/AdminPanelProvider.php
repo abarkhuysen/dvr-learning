@@ -27,8 +27,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->authGuard('web')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -37,8 +38,14 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Default widgets
+                //Widgets\AccountWidget::class,
+                //Widgets\FilamentInfoWidget::class,
+                // Custom LMS widgets
+                \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\RecentEnrollments::class,
+                \App\Filament\Widgets\CourseChart::class,
+                \App\Filament\Widgets\PopularCoursesChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -53,6 +60,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\EnsureUserHasRole::class . ':admin',
             ]);
     }
 }
