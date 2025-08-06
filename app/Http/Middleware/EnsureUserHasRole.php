@@ -15,7 +15,19 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        if (!$request->user() || $request->user()->role !== $role) {
+        $user = $request->user();
+        
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+        
+        // Allow admins to act as students when in student view mode
+        if ($user->role === 'admin' && $role === 'student' && session('acting_as') === 'student') {
+            return $next($request);
+        }
+        
+        // Normal role check
+        if ($user->role !== $role) {
             abort(403, 'Unauthorized');
         }
         

@@ -81,7 +81,7 @@ new class extends Component
         <flux:navbar class="max-w-7xl mx-auto">
             <flux:navbar.brand href="/dashboard" wire:navigate>
                 <flux:icon name="academic-cap" class="size-6" />
-                LMS Platform
+                {{ config('app.name') }}
             </flux:navbar.brand>
 
             <flux:spacer />
@@ -90,15 +90,13 @@ new class extends Component
             <flux:navbar.item href="/courses" wire:navigate class="font-semibold">Browse Courses</flux:navbar.item>
             <flux:navbar.item icon="bell" badge="3" />
             <flux:dropdown>
-                <flux:dropdown.trigger>
-                    <flux:avatar size="sm" src="{{ auth()->user()->avatar }}" />
-                </flux:dropdown.trigger>
-                <flux:dropdown.menu>
-                    <flux:dropdown.item icon="user-circle" href="/profile">Profile</flux:dropdown.item>
-                    <flux:dropdown.item icon="cog" href="/settings/profile">Settings</flux:dropdown.item>
-                    <flux:dropdown.item separator />
-                    <flux:dropdown.item icon="arrow-left-start-on-rectangle" href="/logout">Logout</flux:dropdown.item>
-                </flux:dropdown.menu>
+                <flux:avatar size="sm" src="{{ auth()->user()->avatar }}" />
+                <flux:menu>
+                    <flux:menu.item icon="user-circle" href="/profile">Profile</flux:menu.item>
+                    <flux:menu.item icon="cog" href="/settings/profile">Settings</flux:menu.item>
+                    <flux:menu.separator />
+                    <flux:menu.item icon="arrow-left-start-on-rectangle" href="/logout">Logout</flux:menu.item>
+                </flux:menu>
             </flux:dropdown>
         </flux:navbar>
     </flux:header>

@@ -129,7 +129,7 @@ new class extends Component
         <flux:navbar class="max-w-7xl mx-auto">
             <flux:navbar.brand href="/dashboard" wire:navigate>
                 <flux:icon name="academic-cap" class="size-6" />
-                LMS Platform
+                {{ config('app.name') }}
             </flux:navbar.brand>
 
             <flux:spacer />

@@ -79,6 +79,35 @@ class User extends Authenticatable
     }
     
     /**
+     * Role switching methods for admins
+     */
+    public function isActingAsStudent(): bool
+    {
+        return $this->role === 'admin' && session('acting_as') === 'student';
+    }
+    
+    public function canSwitchRoles(): bool
+    {
+        return $this->role === 'admin';
+    }
+    
+    public function getCurrentRole(): string
+    {
+        if ($this->isActingAsStudent()) {
+            return 'student';
+        }
+        return $this->role;
+    }
+    
+    public function getCurrentRoleDisplay(): string
+    {
+        if ($this->isActingAsStudent()) {
+            return 'Student View (Admin)';
+        }
+        return ucfirst($this->role);
+    }
+    
+    /**
      * Relationships
      */
     public function enrollments()

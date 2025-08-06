@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
+use Filament\Navigation\MenuItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -61,6 +62,13 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 \App\Http\Middleware\EnsureUserHasRole::class . ':admin',
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('View as Student')
+                    ->icon('heroicon-o-academic-cap')
+                    ->url('/switch-to-student')
+                    ->visible(fn () => auth()->user() && auth()->user()->canSwitchRoles()),
             ]);
     }
 }

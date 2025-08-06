@@ -5,7 +5,14 @@ use Livewire\Volt\Volt;
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return auth()->user()->isAdmin() 
+        $user = auth()->user();
+        
+        // Check if admin is acting as student
+        if ($user->isActingAsStudent()) {
+            return redirect('/dashboard');
+        }
+        
+        return $user->isAdmin() 
             ? redirect('/admin') 
             : redirect('/dashboard');
     }
@@ -33,6 +40,12 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
 // Admin routes (FilamentPHP handles these automatically)
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // FilamentPHP admin panel routes are auto-registered
+    
+    // Role switching route
+    Route::get('/switch-to-student', function () {
+        session(['acting_as' => 'student']);
+        return redirect('/dashboard');
+    })->name('switch-to-student');
 });
 
 // Vimeo webhook route (no authentication required)

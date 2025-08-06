@@ -111,7 +111,6 @@ new class extends Component
     }
 }; ?>
 
-<x-layouts.student>
 <div>
     <main class="max-w-7xl mx-auto py-6 px-4">
         <!-- Welcome Section -->
@@ -229,4 +228,3 @@ new class extends Component
         <flux:toast>{{ session('message') }}</flux:toast>
     @endif
 </div>
-</x-layouts.student>
