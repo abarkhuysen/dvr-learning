@@ -88,6 +88,65 @@ new class extends Component {
         <flux:heading size="xl" class="mb-2">Welcome back, {{ auth()->user()->name }}!</flux:heading>
         <flux:text size="sm">Continue your learning journey</flux:text>
     </div>
+
+    <!-- My Courses Section -->
+    @if($enrolledCourses->count() > 0)
+        <flux:heading size="lg">My Courses</flux:heading>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($enrolledCourses as $enrollment)
+                <flux:card class="hover:shadow-lg transition-shadow p-0">
+                    <div class="h-48 bg-gradient-to-br from-blue-600 to-blue-900 relative rounded-t-xl">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <flux:icon name="play-circle" class="size-16 text-white opacity-80"/>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <flux:heading size="md" class="mb-2">{{ $enrollment->course->title }}</flux:heading>
+                        <flux:text size="sm" class="mb-4">
+                            {{ Str::limit($enrollment->course->description, 100) }}
+                        </flux:text>
+                        <!-- Progress Bar -->
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <flux:text size="sm">Progress</flux:text>
+                                <flux:text size="sm">{{ number_format($enrollment->progress_percentage) }}%</flux:text>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div class="bg-blue-800 h-2 rounded-full"
+                                     style="width: {{ $enrollment->progress_percentage }}%"></div>
+                            </div>
+                        </div>
+                        <flux:button wire:click="continueLearning({{ $enrollment->course->id }})"
+                                     variant="filled"
+                                     class="w-full">
+                            @if($enrollment->progress_percentage == 0)
+                                Start Course
+                            @elseif($enrollment->progress_percentage == 100)
+                                Review Course
+                            @else
+                                Continue Learning
+                            @endif
+                        </flux:button>
+                    </div>
+                </flux:card>
+            @endforeach
+                <div class="hidden lg:block  relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="flex items-center justify-center h-full">
+                        <flux:heading size="xl" class="text-zinc-200 dark:text-zinc-700">COMING SOON</flux:heading>
+                    </div>
+                    <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
+                </div>
+                <div class="hidden lg:block  relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="flex items-center justify-center h-full">
+                        <flux:heading size="xl" class="text-zinc-200 dark:text-zinc-700">COMING SOON</flux:heading>
+                    </div>
+                    <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
+                </div>
+        </div>
+    @endif
+
+    <!-- Learning Stats -->
+    <flux:heading size="lg">Course Statistics</flux:heading>
     <div class="grid auto-rows-min gap-4 md:grid-cols-3">
         <flux:card>
             <div class="flex items-center justify-between">
@@ -118,50 +177,6 @@ new class extends Component {
         </flux:card>
     </div>
 
-    <!-- My Courses Section -->
-    @if($enrolledCourses->count() > 0)
-        <flux:heading size="lg">My Courses</flux:heading>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($enrolledCourses as $enrollment)
-                <flux:card class="hover:shadow-lg transition-shadow p-0">
-                    <div class="h-48 bg-gradient-to-br from-blue-600 to-blue-900 relative rounded-t-xl">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <flux:icon name="play-circle" class="size-16 text-white opacity-80"/>
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <flux:heading size="md" class="mb-2">{{ $enrollment->course->title }}</flux:heading>
-                        <flux:text size="sm" class="mb-4">
-                            {{ Str::limit($enrollment->course->description, 100) }}
-                        </flux:text>
-                        <!-- Progress Bar -->
-                        <div class="mb-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <flux:text size="sm">Progress</flux:text>
-                                <flux:text size="sm">{{ number_format($enrollment->progress_percentage) }}%</flux:text>
-                            </div>
-                            <div class="w-full bg-gray-100 rounded-full h-2">
-                                <div class="bg-blue-800 h-2 rounded-full"
-                                     style="width: {{ $enrollment->progress_percentage }}%"></div>
-                            </div>
-                        </div>
-                        <flux:button wire:click="continueLearning({{ $enrollment->course->id }})"
-                                     variant="primary"
-                                     class="w-full">
-                            @if($enrollment->progress_percentage == 0)
-                                Start Course
-                            @elseif($enrollment->progress_percentage == 100)
-                                Review Course
-                            @else
-                                Continue Learning
-                            @endif
-                        </flux:button>
-                    </div>
-                </flux:card>
-            @endforeach
-        </div>
-    @endif
-
     <!-- Recent Activity -->
     <flux:heading size="lg">Recent Activity</flux:heading>
     @if($recentProgress->count() > 0)
@@ -169,7 +184,7 @@ new class extends Component {
         <div class="space-y-4">
             @foreach($recentProgress as $progress)
                 <flux:card class="flex items-center space-x-4 p-3">
-                    <flux:icon name="check-circle" class="size-6 text-green-500"/>
+                    <flux:icon name="check" class="size-6 text-green-500"/>
                     <div class="flex-1">
                         <flux:heading size="lg">{{ $progress->lesson->title }}</flux:heading>
                         <flux:text size="sm">

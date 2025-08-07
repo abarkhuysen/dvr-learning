@@ -1,51 +1,16 @@
 <div class="min-h-screen">
     <flux:sidebar stashable
-                  class="bg-white dark:bg-transparent border-r rtl:border-r-0 rtl:border-l border-zinc-200 dark:border-zinc-700">
+                  class="w-72 bg-white dark:bg-transparent border-r">
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark"/>
         <flux:button href="/dashboard" wire:navigate variant="ghost" icon="arrow-left">
             Back to Dashboard
         </flux:button>
         <flux:separator/>
-        <flux:heading size="md" class="mb-4">Course Content</flux:heading>
-        @foreach($lessons as $lesson)
-            <button
-                wire:click="selectLesson({{ $lesson->id }})"
-                class="w-full text-left border rounded-lg px-1 py-3 transition-all hover:shadow-sm
-                                   {{ $currentLesson?->id === $lesson->id
-                                       ? 'bg-blue-50 border-blue-300 shadow-sm'
-                                       : 'hover:bg-gray-50 border-gray-200' }}">
-                <div class="flex items-start space-x-3">
-                    <div class="mt-0.5">
-                        @if($userProgress->where('lesson_id', $lesson->id)->first()?->completed)
-                            <flux:icon name="check-circle" class="size-5 text-green-500"/>
-                        @elseif($currentLesson?->id === $lesson->id)
-                            <flux:icon name="play-circle" class="size-5 text-blue-800"/>
-                        @else
-                            <flux:icon name="play-circle" class="size-5 text-gray-400"/>
-                        @endif
-                    </div>
-
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between">
-                            <flux:text
-                                class="font-medium {{ $currentLesson?->id === $lesson->id ? 'text-blue-800' : '' }}">
-                                {{ $lesson->title }}
-                            </flux:text>
-                            @if($lesson->is_free)
-                                <flux:badge color="green" size="sm">Free</flux:badge>
-                            @endif
-                        </div>
-                        <flux:text size="sm">
-                            Lesson {{ $lesson->order }}
-                        </flux:text>
-                    </div>
-                </div>
-            </button>
-        @endforeach
+        <x-student.course-content :lessons="$lessons" :currentLesson="$currentLesson" :userProgress="$userProgress" />
     </flux:sidebar>
 
-    <flux:main>
-        <div class="flex items-center justify-between">
+    <flux:main class="p-2!">
+        <div class="flex flex-col gap-y-4 md:flex-row md:items-center md:justify-between mb-6">
             <div class="flex items-center">
                 <div>
                     <flux:heading size="lg">{{ $course->title }}</flux:heading>
@@ -58,7 +23,7 @@
 
             <!-- Progress Bar -->
             <div class="flex items-center space-x-4">
-                <div class="w-48">
+                <div class="w-full md:w-48">
                     <div class="w-full bg-gray-200 rounded-full h-2">
                         <div class="bg-green-600 h-2 rounded-full transition-all duration-300"
                              style="width: {{ $enrollment->progress_percentage }}%"></div>
@@ -69,8 +34,10 @@
                 </flux:text>
             </div>
         </div>
+
         @if($currentLesson)
-            <div class="p-6 max-w-5xl mx-auto">
+            <flux:separator/>
+            <div class="mt-4">
                 <!-- Video Player -->
                 <div class="bg-black rounded-lg overflow-hidden mb-3" style="aspect-ratio: 16/9;">
                     @if($currentLesson->vimeo_video_id)
@@ -112,7 +79,7 @@
                 @endif
 
                 <flux:card class="mb-6">
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
                         <div class="flex-1">
                             <flux:heading size="xl" class="mb-2">{{ $currentLesson->title }}</flux:heading>
                             @if($currentLesson->description)
@@ -128,17 +95,18 @@
                             @endif
                         </div>
 
-                        <div class="ml-6">
+                        <div class="w-full md:w-auto flex-shrink-0">
                             @if(!$userProgress->where('lesson_id', $currentLesson->id)->first()?->completed)
                                 <flux:button
                                     wire:click="markComplete"
                                     variant="primary"
-                                    icon="check">
+                                    icon="check"
+                                    class="w-full md:w-auto">
                                     Mark as Complete
                                 </flux:button>
                             @else
                                 <div class="flex items-center space-x-2 text-green-600">
-                                    <flux:icon name="check-circle" class="size-6"/>
+                                    <flux:icon name="check" class="size-6"/>
                                     <span class="font-semibold">Completed</span>
                                 </div>
                             @endif
@@ -148,7 +116,7 @@
                 <!-- Lesson Info and Actions -->
                 <div class="">
                     <!-- Navigation Buttons -->
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                         @php
                             $currentIndex = $lessons->search(fn($l) => $l->id === $currentLesson->id);
                             $hasPrevious = $currentIndex > 0;
@@ -159,7 +127,8 @@
                             <flux:button
                                 wire:click="previousLesson"
                                 variant="filled"
-                                icon="chevron-left">
+                                icon="chevron-left"
+                                class="w-full md:w-auto">
                                 Previous Lesson
                             </flux:button>
                         @else
@@ -169,12 +138,13 @@
                         @if($hasNext)
                             <flux:button
                                 wire:click="nextLesson"
-                                icon:trailing="chevron-right">
+                                icon:trailing="chevron-right"
+                                class="w-full md:w-auto">
                                 Next Lesson
                             </flux:button>
                         @else
                             @if($userProgress->where('completed', true)->count() === $lessons->count())
-                                <flux:badge color="green" class="px-4 py-2">
+                                <flux:badge color="green" class="w-full justify-center px-4 py-2 md:w-auto">
                                     <flux:icon name="academic-cap" class="mr-2"/>
                                     Course Completed!
                                 </flux:badge>
@@ -312,7 +282,7 @@
                         </flux:button>
                     </div>
                 @else
-                    <flux:icon name="check-circle" class="size-20 text-green-500 mx-auto mb-4"/>
+                    <flux:icon name="check" class="size-20 text-green-500 mx-auto mb-4"/>
                     <flux:heading size="xl" class="mb-2">Lesson Complete!</flux:heading>
                     <flux:text class="text-gray-600 mb-6">
                         Great job! You've completed "{{ $currentLesson?->title }}".
