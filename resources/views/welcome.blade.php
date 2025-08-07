@@ -2,7 +2,7 @@
     <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
         <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
             <div class="flex-1 px-6 py-24 leading-[21px] text-start lg:text-center bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-es-lg rounded-ee-lg lg:rounded-ss-lg lg:rounded-ee-none">
-                <h1 class="text-[26px] mb-4 font-bold text-blue-900">{{ config('app.name') }}</h1>
+                <h1 class="text-[26px] mb-4 font-bold text-blue-800">{{ config('app.name') }}</h1>
                 <p class="text-[14px] mb-2 text-[#706f6c] dark:text-[#A1A09A]">Dorothy van’t Riet Design & Décor Consultants is firm of interior designers, specialising in interior architecture, space planning, décor & styling</p>
                 <div class="mt-8 m-auto max-w-full max-lg:min-w-fit lg:max-w-96  flex justify-center">
                     <div>

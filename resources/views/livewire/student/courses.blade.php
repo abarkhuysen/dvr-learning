@@ -197,7 +197,6 @@ new class extends Component
                         @else
                             <flux:button
                                 wire:click="enrollInCourse({{ $course->id }})"
-                                variant="outline"
                                 class="w-full"
                             >
                                 Enroll Now
@@ -221,7 +220,7 @@ new class extends Component
                     @endif
                 </flux:text>
                 @if($search)
-                    <flux:button wire:click="$set('search', '')" variant="outline">
+                    <flux:button wire:click="$set('search', '')">
                         Clear Search
                     </flux:button>
                 @endif

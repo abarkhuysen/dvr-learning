@@ -8,6 +8,7 @@
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <a href="{{ route('dashboard') }}" class="ms-2 me-5 flex items-center space-x-2 rtl:space-x-reverse lg:ms-0" wire:navigate>
+                <flux:icon name="academic-cap" class="size-6 text-blue-800" />
                 <x-app-logo />
             </a>
 
@@ -18,12 +19,16 @@
             </flux:navbar>
 
             <flux:spacer />
-
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
                 <flux:tooltip :content="__('Search')" position="bottom">
                     <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
                 </flux:tooltip>
             </flux:navbar>
+
+            <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
+                <flux:radio value="light" icon="sun" />
+                <flux:radio value="dark" icon="moon" />
+            </flux:radio.group>
 
             <!-- Desktop User Menu -->
             <flux:dropdown position="top" align="end">

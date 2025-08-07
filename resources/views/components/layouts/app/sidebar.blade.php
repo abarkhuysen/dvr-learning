@@ -9,19 +9,18 @@
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
             <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+                <flux:icon name="academic-cap" class="size-6 text-blue-800" />
                 <x-app-logo />
             </a>
 
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Learning')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="book-open" :href="route('courses')" :current="request()->routeIs('courses')" wire:navigate>{{ __('Browse Courses') }}</flux:navlist.item>
-                    <flux:navlist.item icon="user-circle" :href="route('profile')" :current="request()->routeIs('profile')" wire:navigate>{{ __('My Profile') }}</flux:navlist.item>
+                    <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />
-
+            <flux:switch x-data x-model="$flux.dark" label="Dark mode"  />
             <!-- Desktop User Menu -->
             <flux:dropdown class="hidden lg:block" position="bottom" align="start">
                 <flux:profile
@@ -55,6 +54,9 @@
                     <flux:menu.radio.group>
                         <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
                     </flux:menu.radio.group>
+
+                    <!-- Role Switcher Banner -->
+                    @livewire('role-switcher')
 
                     <flux:menu.separator />
 
